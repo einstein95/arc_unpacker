@@ -19,7 +19,7 @@
 
 #include <string>
 #include <vector>
-
+#include <cstdint>
 namespace au {
 
     using u8 = uint8_t;
