@@ -78,4 +78,4 @@ jobs:
         with:
           name: Built Artifacts
           path: |
-            build/  # Add other paths if necessary
+            build/
