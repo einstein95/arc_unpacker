@@ -1,4 +1,4 @@
-name: Build and Release
+name: Build Project
 
 on:
   push:
@@ -12,70 +12,23 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
-    strategy:
-      matrix:
-        os: [ubuntu-latest, windows-latest]
-        include:
-          - os: ubuntu-latest
-            target: linux
-          - os: ubuntu-latest
-            target: windows
-
     steps:
-      - name: Set up CMake
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y cmake
-
-      - name: Install Dependencies
-        run: |
-          if [[ "${{ matrix.target }}" == "linux" ]]; then
-            sudo apt-get install -y libboost-locale-dev libboost-filesystem-dev libpng-dev libjpeg-dev zlib1g-dev libssl-dev libwebp-dev
-            sudo apt-get install -y g++-mingw-w64-x86-64
-          else
-            choco install cmake --installargs 'ADD_CMAKE_TO_PATH=System'
-            choco install boost-msvc-14.0.0 zlib libpng libjpeg-turbo openssl libwebp win-iconv
-          fi
-
-      - name: Clone Repository
+      - name: Checkout Repository
         uses: actions/checkout@v2
 
-      - name: Build
+      - name: Set up CMake
+        uses: cmake/setup-cmake@v1
+
+      - name: Install Dependencies (Linux)
         run: |
-          if [[ "${{ matrix.target }}" == "linux" ]]; then
-            mkdir build-linux
-            cd build-linux
-            cmake -DCMAKE_BUILD_TYPE=Release ..
-            make -j8
-          else
-            mkdir build-windows
-            cd build-windows
-            cmake -DCMAKE_TOOLCHAIN_FILE=../cmake/toolchain-mingw.cmake -DCMAKE_BUILD_TYPE=Release ..
-            make -j8
-          fi
+          sudo apt-get update
+          sudo apt-get install -y g++ cmake libboost-locale-dev libboost-filesystem-dev libpng-dev libjpeg-dev zlib1g-dev libiconv-hook-dev libssl-dev libwebp-dev
+          
+      - name: Create Build Directory
+        run: mkdir build
+      - name: Configure CMake
+        run: cmake -DCMAKE_BUILD_TYPE=Release -S . -B build
 
-      - name: Test
-        run: |
-          if [[ "${{ matrix.target }}" == "linux" ]]; then
-            cd build-linux
-            ctest --output-on-failure
-          fi
-
-      - name: Create Release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: v${{ github.run_number }}
-          release_name: Release ${{ github.run_number }}
-          body: |
-            Automatic release created by GitHub Actions
-          draft: false
-          prerelease: false
-
-      - name: Upload Artifacts
-        uses: actions/upload-artifact@v2
-        with:
-          name: Built Artifacts
-          path: |
-            build/
+      - name: Build Project
+        run: cmake --build build --parallel 8 && ls build
+    
