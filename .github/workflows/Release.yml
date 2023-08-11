@@ -36,5 +36,6 @@ jobs:
           allowUpdates: true
           replacesArtifacts: false
           #tag: z${{ env.BUILD }}
+          commit: true
           #name: ONScripter-ru r${{ env.BUILD }}
           artifacts: "build/arc_unpacker"
