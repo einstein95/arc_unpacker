@@ -1,0 +1,81 @@
+name: Release
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        include:
+          - os: ubuntu-latest
+            compiler: g++
+          - os: ubuntu-latest
+            compiler: clang++
+          - os: windows-latest
+            compiler: mingw
+
+    steps:
+      - name: Set up CMake
+        run: |
+          if [[ "${{ matrix.os }}" == "ubuntu-latest" ]]; then
+            sudo apt-get update
+            sudo apt-get install -y cmake
+          else
+            choco install cmake --installargs 'ADD_CMAKE_TO_PATH=System'
+          fi
+
+      - name: Install Dependencies
+        run: |
+          if [[ "${{ matrix.os }}" == "ubuntu-latest" ]]; then
+            # Install build dependencies for Ubuntu
+            sudo apt-get install -y libboost-locale-dev libboost-filesystem-dev libpng-dev libjpeg-dev zlib1g-dev libssl-dev libwebp-dev
+
+            # Install iconv (assuming it is available in the system)
+            sudo apt-get install -y libc6-dev
+          else
+            # Install build dependencies for Windows
+            choco install boost-msvc-14.0.0 zlib libpng libjpeg-turbo openssl libwebp win-iconv
+          fi
+
+      - name: Clone Repository
+        uses: actions/checkout@v2
+
+      - name: Build
+        run: |
+          mkdir build
+          cd build
+          cmake -DCMAKE_BUILD_TYPE=Release ..
+          make -j${{ matrix.cores }}
+
+      - name: Test
+        run: |
+          cd build
+          ctest --output-on-failure
+
+      - name: Create Release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: v${{ github.run_number }}
+          release_name: Release ${{ github.run_number }}
+          body: |
+            Automatic release created by GitHub Actions
+          draft: false
+          prerelease: false
+
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: Built Artifacts
+          path: |
+            build/  # Add other paths if necessary
