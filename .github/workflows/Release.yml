@@ -15,10 +15,7 @@ jobs:
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v2
-
-      - name: Set up CMake
-        uses: cmake/setup-cmake@v1
-
+        
       - name: Install Dependencies (Linux)
         run: |
           sudo apt-get update
