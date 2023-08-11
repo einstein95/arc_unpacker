@@ -1,48 +1,39 @@
-name: Release
+name: Build and Release
 
 on:
   push:
     branches:
-      - master
+      - main
   pull_request:
     branches:
-      - master
+      - main
 
 jobs:
   build:
-    runs-on: ${{ matrix.os }}
+    runs-on: ubuntu-latest
 
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest]
         include:
           - os: ubuntu-latest
-            compiler: g++
+            target: linux
           - os: ubuntu-latest
-            compiler: clang++
-          - os: windows-latest
-            compiler: mingw
+            target: windows
 
     steps:
       - name: Set up CMake
         run: |
-          if [[ "${{ matrix.os }}" == "ubuntu-latest" ]]; then
-            sudo apt-get update
-            sudo apt-get install -y cmake
-          else
-            choco install cmake --installargs 'ADD_CMAKE_TO_PATH=System'
-          fi
+          sudo apt-get update
+          sudo apt-get install -y cmake
 
       - name: Install Dependencies
         run: |
-          if [[ "${{ matrix.os }}" == "ubuntu-latest" ]]; then
-            # Install build dependencies for Ubuntu
+          if [[ "${{ matrix.target }}" == "linux" ]]; then
             sudo apt-get install -y libboost-locale-dev libboost-filesystem-dev libpng-dev libjpeg-dev zlib1g-dev libssl-dev libwebp-dev
-
-            # Install iconv (assuming it is available in the system)
-            sudo apt-get install -y libc6-dev
+            sudo apt-get install -y g++-mingw-w64-x86-64
           else
-            # Install build dependencies for Windows
+            choco install cmake --installargs 'ADD_CMAKE_TO_PATH=System'
             choco install boost-msvc-14.0.0 zlib libpng libjpeg-turbo openssl libwebp win-iconv
           fi
 
@@ -51,15 +42,24 @@ jobs:
 
       - name: Build
         run: |
-          mkdir build
-          cd build
-          cmake -DCMAKE_BUILD_TYPE=Release ..
-          make -j${{ matrix.cores }}
+          if [[ "${{ matrix.target }}" == "linux" ]]; then
+            mkdir build-linux
+            cd build-linux
+            cmake -DCMAKE_BUILD_TYPE=Release ..
+            make -j8
+          else
+            mkdir build-windows
+            cd build-windows
+            cmake -DCMAKE_TOOLCHAIN_FILE=../cmake/toolchain-mingw.cmake -DCMAKE_BUILD_TYPE=Release ..
+            make -j8
+          fi
 
       - name: Test
         run: |
-          cd build
-          ctest --output-on-failure
+          if [[ "${{ matrix.target }}" == "linux" ]]; then
+            cd build-linux
+            ctest --output-on-failure
+          fi
 
       - name: Create Release
         uses: actions/create-release@v1
