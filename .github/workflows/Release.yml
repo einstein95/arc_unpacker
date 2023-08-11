@@ -27,5 +27,14 @@ jobs:
         run: cmake -DCMAKE_BUILD_TYPE=Release -S . -B build
 
       - name: Build Project
-        run: cmake --build build --parallel 8 && ls build
-    
+        run: cmake --build build --parallel 8
+        #&& ls build
+        
+      - name: Upload files
+        uses: ncipollo/release-action@v1
+        with:
+          allowUpdates: true
+          replacesArtifacts: false
+          #tag: z${{ env.BUILD }}
+          #name: ONScripter-ru r${{ env.BUILD }}
+          artifacts: "build/arc_unpacker"
