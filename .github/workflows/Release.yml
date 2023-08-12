@@ -11,7 +11,6 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v2
@@ -20,15 +19,23 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y g++ cmake libboost-locale-dev libboost-filesystem-dev libpng-dev libjpeg-dev zlib1g-dev libiconv-hook-dev libssl-dev libwebp-dev
-          
+
       - name: Create Build Directory
         run: mkdir build
-      - name: Configure CMake
+      - name: Configure CMake (Linux)
         run: cmake -DCMAKE_BUILD_TYPE=Release -S . -B build
-
-      - name: Build Project
-        run: cmake --build build --parallel 8
-        #&& ls build
+      - name: Build Project (Linux)
+        run: |
+          cmake --build build --parallel 8
+          mv build/arc_unpacker .
+          rm -r build
+      - name: Configure CMake (Windows)
+        run: cmake -DCMAKE_BUILD_TYPE=Release -S . -B build -G "MinGW Makefiles"
+      - name: Build Project (Windows)
+        run: |
+          cmake --build build --parallel 8
+          mv build/arc_unpacker.exe .
+      
       - name: Env setup
         run: |
           BUILD=$(git rev-list --count --first-parent HEAD)
@@ -40,5 +47,5 @@ jobs:
           replacesArtifacts: false
           tag: z${{ env.BUILD }}
           name: arc_unpacker r${{ env.BUILD }}
-          artifacts: "build/arc_unpacker"
+          artifacts: "arc_unpacker, arc_unpacker.exe"
           #bodyFile: "body.md"
