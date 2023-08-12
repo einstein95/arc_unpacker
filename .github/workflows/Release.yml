@@ -29,8 +29,16 @@ jobs:
       - name: Build Project
         run: cmake --build build --parallel 8
         #&& ls build
-        
-      - name: Create Release
-        uses: softprops/action-gh-release@v1
+      - name: Env setup
+        run: |
+          BUILD=$(($(git rev-list --count --first-parent HEAD)+3500))
+          echo "Build number ${BUILD}"
+          echo "BUILD=${BUILD}" >> $GITHUB_ENV
+      - uses: ncipollo/release-action@v1
         with:
-          files: build/arc_unpacker
+          allowUpdates: true
+          replacesArtifacts: false
+          tag: z${{ env.BUILD }}
+          name: arc_unpacker r${{ env.BUILD }}
+          artifacts: "arc_unpacker"
+          #bodyFile: "body.md"
