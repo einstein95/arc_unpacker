@@ -31,7 +31,7 @@ jobs:
         #&& ls build
       - name: Env setup
         run: |
-          BUILD=$(($(git rev-list --count --first-parent HEAD)+3500))
+          BUILD=$(git rev-list --count --first-parent HEAD)
           echo "Build number ${BUILD}"
           echo "BUILD=${BUILD}" >> $GITHUB_ENV
       - uses: ncipollo/release-action@v1
