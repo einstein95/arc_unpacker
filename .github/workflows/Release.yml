@@ -30,7 +30,9 @@ jobs:
           cd ..
 
       - name: Create Build Directory
-        run: mkdir build
+        run: |
+          mkdir build
+          mkdir build-mxe
 
       - name: Configure CMake (Linux)
         run: cmake -DCMAKE_BUILD_TYPE=Release -S . -B build
@@ -41,8 +43,8 @@ jobs:
 
       - name: Build Project (Windows)
         run: |
-          cd build
-          ~/mxe/usr/bin/x86_64-w64-mingw32.static-cmake ..
+          cd build-mxe
+          /home/runner/work/arc_unpacker/arc_unpacker/mxe/usr/bin/x86_64-w64-mingw32.static-cmake ..
           make -j8
 
       - name: Env setup
