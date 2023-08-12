@@ -18,7 +18,7 @@ jobs:
       - name: Install Dependencies (Linux)
         run: |
           sudo apt-get update
-          sudo apt-get install -y g++ cmake libboost-locale-dev libboost-filesystem-dev libpng-dev libjpeg-dev zlib1g-dev libiconv-hook-dev libssl-dev libwebp-dev
+          sudo apt-get install -y g++ cmake libboost-locale-dev libboost-filesystem-dev libpng-dev libjpeg-dev zlib1g-dev libiconv-hook-dev libssl-dev libwebp-dev mingw-w64
 
       - name: Create Build Directory
         run: mkdir build
