@@ -14,38 +14,47 @@ jobs:
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v2
-        
+
       - name: Install Dependencies (Linux)
         run: |
           sudo apt-get update
-          sudo apt-get install -y g++ cmake libboost-locale-dev libboost-filesystem-dev libpng-dev libjpeg-dev zlib1g-dev libiconv-hook-dev libssl-dev libwebp-dev mingw-w64
+          sudo apt-get install -y g++ cmake libboost-locale-dev libboost-filesystem-dev libpng-dev libjpeg-dev zlib1g-dev libiconv-hook-dev libssl-dev libwebp-dev
+
+      - name: Clone MXE
+        run: git clone https://github.com/mxe/mxe.git
+
+      - name: Build arc_unpacker Dependencies (MXE)
+        run: |
+          cd mxe
+          MXE_GCC_THREADS=posix MXE_PLUGIN_DIRS=plugins/gcc6/ make libiconv zlib libpng jpeg boost openssl libwebp -j8 JOBS=8
+          cd ..
 
       - name: Create Build Directory
         run: mkdir build
+
       - name: Configure CMake (Linux)
         run: cmake -DCMAKE_BUILD_TYPE=Release -S . -B build
+
       - name: Build Project (Linux)
         run: |
           cmake --build build --parallel 8
-          mv build/arc_unpacker .
-          rm -r build
-      - name: Configure CMake (Windows)
-        run: cmake -DCMAKE_BUILD_TYPE=Release -S . -B build -DCMAKE_TOOLCHAIN_FILE=/usr/share/mingw-w64/toolchain.cmake
+
       - name: Build Project (Windows)
         run: |
-          cmake --build build --parallel 8
-          mv build/arc_unpacker.exe .
-      
+          cd build
+          ~/mxe/usr/bin/x86_64-w64-mingw32.static-cmake ..
+          make -j8
+
       - name: Env setup
         run: |
           BUILD=$(git rev-list --count --first-parent HEAD)
           echo "Build number ${BUILD}"
           echo "BUILD=${BUILD}" >> $GITHUB_ENV
+
       - uses: ncipollo/release-action@v1
         with:
           allowUpdates: true
           replacesArtifacts: false
           tag: z${{ env.BUILD }}
           name: arc_unpacker r${{ env.BUILD }}
-          artifacts: "arc_unpacker, arc_unpacker.exe"
-          #bodyFile: "body.md"
+          artifacts: "build/arc_unpacker, build-mxe/arc_unpacker.exe"
