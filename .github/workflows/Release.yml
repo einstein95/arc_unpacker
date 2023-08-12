@@ -40,5 +40,5 @@ jobs:
           replacesArtifacts: false
           tag: z${{ env.BUILD }}
           name: arc_unpacker r${{ env.BUILD }}
-          artifacts: "arc_unpacker"
+          artifacts: "build/arc_unpacker"
           #bodyFile: "body.md"
