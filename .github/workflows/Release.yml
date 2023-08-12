@@ -30,7 +30,7 @@ jobs:
           mv build/arc_unpacker .
           rm -r build
       - name: Configure CMake (Windows)
-        run: cmake -DCMAKE_BUILD_TYPE=Release -S . -B build -G "MinGW Makefiles"
+        run: cmake -DCMAKE_BUILD_TYPE=Release -S . -B build -DCMAKE_TOOLCHAIN_FILE=/usr/share/mingw-w64/toolchain.cmake
       - name: Build Project (Windows)
         run: |
           cmake --build build --parallel 8
