@@ -42,7 +42,11 @@ io::path io::get_assets_dir_path()
     if (std::getenv("_ARC_UNPACKER_TESTS"))
         dir = program_path;
     else
+    #if defined(__APPLE__)
+        dir = io::path("/opt/homebrew/share/arc_unpacker");
+    #else
         dir = io::path("/usr/share/arc_unpacker");
+    #endif
     do
     {
         const auto path = dir / "etc";

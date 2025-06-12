@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8.8)
+cmake_minimum_required(VERSION 2.8.8..4.0.0)
 project(arc_unpacker)
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED on)
@@ -43,7 +43,7 @@ find_package(OpenSSL REQUIRED)
 include_directories(${OPENSSL_INCLUDE_DIR})
 link_directories(${OPENSSL_LIBRARY_DIRS})
 
-find_package(WebP)
+find_package(WEBP)
 include_directories(${WEBP_INCLUDE_DIR})
 link_directories(${WEBP_LIBRARY_DIRS})
 
